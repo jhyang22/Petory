@@ -20,4 +20,14 @@ public class BaseEntityWithCreatedAt {
 	private LocalDateTime createdAt;
 
 	private LocalDateTime deletedAt;
+
+	// soft delete 시 사용
+	public void deactivateEntity() {
+		this.deletedAt = LocalDateTime.now();
+	}
+
+	// soft delete 복구 시 사용
+	public void restoreEntity() {
+		this.deletedAt = null;
+	}
 }
