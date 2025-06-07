@@ -1,5 +1,6 @@
 package com.study.petory.domain.ownerBoard.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -7,18 +8,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.study.petory.domain.ownerBoard.dto.request.OwnerBoardCreateRequestDto;
 import com.study.petory.domain.ownerBoard.dto.request.OwnerBoardUpdateRequestDto;
+import com.study.petory.domain.ownerBoard.dto.response.OwnerBoardCommentGetResponseDto;
 import com.study.petory.domain.ownerBoard.dto.response.OwnerBoardCreateResponseDto;
 import com.study.petory.domain.ownerBoard.dto.response.OwnerBoardGetAllResponseDto;
 import com.study.petory.domain.ownerBoard.dto.response.OwnerBoardGetResponseDto;
 import com.study.petory.domain.ownerBoard.dto.response.OwnerBoardUpdateResponseDto;
 import com.study.petory.domain.ownerBoard.entity.OwnerBoard;
-import com.study.petory.domain.ownerBoard.repository.OwnerBoardRepository;
-import com.study.petory.domain.ownerBoard.dto.response.OwnerBoardCommentGetResponseDto;
 import com.study.petory.domain.ownerBoard.entity.OwnerBoardComment;
+import com.study.petory.domain.ownerBoard.entity.OwnerBoardImage;
 import com.study.petory.domain.ownerBoard.repository.OwnerBoardCommentRepository;
+import com.study.petory.domain.ownerBoard.repository.OwnerBoardImageRepository;
+import com.study.petory.domain.ownerBoard.repository.OwnerBoardRepository;
 import com.study.petory.domain.user.entity.User;
 import com.study.petory.domain.user.repository.UserRepository;
 import com.study.petory.exception.CustomException;
@@ -32,6 +36,8 @@ public class OwnerBoardServiceImpl implements OwnerBoardService {
 	private final OwnerBoardRepository ownerBoardRepository;
 	private final UserRepository userRepository;
 	private final OwnerBoardCommentRepository ownerBoardCommentRepository;
+	private final OwnerBoardImageService ownerBoardImageService;
+	private final OwnerBoardImageRepository ownerBoardImageRepository;
 
 	// ownerBoardId로 OwnerBoard 조회
 	@Override
@@ -41,7 +47,8 @@ public class OwnerBoardServiceImpl implements OwnerBoardService {
 
 	// 게시글 생성
 	@Override
-	public OwnerBoardCreateResponseDto saveOwnerBoard(OwnerBoardCreateRequestDto dto) {
+	@Transactional
+	public OwnerBoardCreateResponseDto saveOwnerBoard(OwnerBoardCreateRequestDto dto, List<MultipartFile> images) {
 		User user = userRepository.findById(1L).orElseThrow(); // 추후 토큰값으로 수정
 
 		OwnerBoard ownerBoard = OwnerBoard.builder()
@@ -52,7 +59,12 @@ public class OwnerBoardServiceImpl implements OwnerBoardService {
 
 		ownerBoardRepository.save(ownerBoard);
 
-		return OwnerBoardCreateResponseDto.from(ownerBoard);
+		List<String> urls = new ArrayList<>();
+		if (images != null && !images.isEmpty()) {
+			urls = ownerBoardImageService.uploadAndSaveAll(images, ownerBoard);
+		}
+
+		return OwnerBoardCreateResponseDto.of(ownerBoard, urls);
 	}
 
 	// 게시글 전체 조회
@@ -131,6 +143,13 @@ public class OwnerBoardServiceImpl implements OwnerBoardService {
 		}
 
 		ownerBoard.restoreEntity();
+	}
+
+	// 게시글 사진 삭제
+	@Override
+	public void deleteImage(Long boardId, Long imageId) {
+		findOwnerBoardById(boardId);
+		ownerBoardImageService.deleteImage(imageId);
 	}
 
 }

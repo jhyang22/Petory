@@ -66,8 +66,13 @@ public enum ErrorCode implements BaseCode {
 
 	//Chat
 	CHAT_ROOM_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 존재하는 채팅방입니다."),
-	CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다.")
-	;
+	CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
+
+	// S3
+	FILE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "파일 업로드에 실패했습니다."),
+	FILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 파일입니다.")
+
+		;
 
 	private final HttpStatus httpStatus;
 	private final String message;

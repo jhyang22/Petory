@@ -47,6 +47,9 @@ public class OwnerBoard extends BaseEntityWithBothAt {
 	@OneToMany(mappedBy = "ownerBoard", cascade = CascadeType.ALL)
 	private List<OwnerBoardComment> comments = new ArrayList<>();
 
+	@OneToMany(mappedBy = "ownerBoard", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<OwnerBoardImage> images = new ArrayList<>();
+
 	@Builder
 	public OwnerBoard(String title, String content, User user) {
 		this.title = title;
