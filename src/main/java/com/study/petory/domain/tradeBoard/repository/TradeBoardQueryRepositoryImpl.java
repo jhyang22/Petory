@@ -9,9 +9,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.study.petory.domain.tradeBoard.dto.response.TradeBoardGetAllResponseDto;
 import com.study.petory.domain.tradeBoard.entity.QTradeBoard;
+import com.study.petory.domain.tradeBoard.entity.QTradeBoardImage;
 import com.study.petory.domain.tradeBoard.entity.TradeBoard;
 import com.study.petory.domain.tradeBoard.entity.TradeBoardStatus;
 import com.study.petory.domain.tradeBoard.entity.TradeCategory;
@@ -30,6 +32,7 @@ public class TradeBoardQueryRepositoryImpl implements TradeBoardQueryRepository 
 	public Page<TradeBoard> findAll(TradeCategory category, Pageable pageable) {
 
 		QTradeBoard tradeBoard = QTradeBoard.tradeBoard;
+		QTradeBoardImage tradeBoardImage = QTradeBoardImage.tradeBoardImage;
 
 		BooleanBuilder builder = new BooleanBuilder();
 
@@ -41,8 +44,15 @@ public class TradeBoardQueryRepositoryImpl implements TradeBoardQueryRepository 
 
 		List<TradeBoard> tradeBoards = queryFactory
 			.selectFrom(tradeBoard)
-			.where(builder)
-			.orderBy(tradeBoard.createdAt.desc())
+			.leftJoin(tradeBoard.images, tradeBoardImage).fetchJoin()
+			.where(
+				tradeBoardImage.id.eq(
+					JPAExpressions
+						.select(tradeBoardImage.id.min())
+						.from(tradeBoardImage)
+						.where(tradeBoardImage.tradeBoard.id.eq(tradeBoard.id))
+				)
+				,builder)
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.fetch();
@@ -61,11 +71,13 @@ public class TradeBoardQueryRepositoryImpl implements TradeBoardQueryRepository 
 	public Page<TradeBoard> findByUserId(Long userId, Pageable pageable) {
 
 		QTradeBoard tradeBoard = QTradeBoard.tradeBoard;
+		QTradeBoardImage tradeBoardImage = QTradeBoardImage.tradeBoardImage;
 		QUser user = QUser.user;
 
 		List<TradeBoard> content = queryFactory
 			.selectFrom(tradeBoard)
 			.join(tradeBoard.user, user).fetchJoin()
+			.leftJoin(tradeBoard.images, tradeBoardImage).fetchJoin()
 			.where(user.id.eq(userId))
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())

@@ -85,11 +85,6 @@ public class TradeBoardServiceImpl implements TradeBoardService {
 
 		List<String> urls = new ArrayList<>();
 		if (images != null && !images.isEmpty()) {
-
-			if (!tradeBoard.isImageOver(images)) {
-				throw new CustomException(ErrorCode.TRADE_BOARD_IMAGE_OVERFLOW);
-			}
-
 			urls = tradeBoardImageService.uploadAndSaveAll(images, tradeBoard);
 		}
 
@@ -164,10 +159,6 @@ public class TradeBoardServiceImpl implements TradeBoardService {
 		TradeBoard tradeBoard = findTradeBoard(tradeBoardId);
 
 		isOwner(userId, tradeBoard);
-
-		if (!tradeBoard.isImageOver(images)) {
-			throw new CustomException(ErrorCode.TRADE_BOARD_IMAGE_OVERFLOW);
-		}
 
 		List<TradeBoardImage> imageEntities = tradeBoardImageService.uploadAndReturnEntities(images, tradeBoard);
 
