@@ -100,7 +100,6 @@ public class UserServiceImpl implements UserService {
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		userRepository.delete(user);
-		// 또는 user.markAsDeleted(); -> 소프트 삭제를 원한다면
 	}
 
 	@Override

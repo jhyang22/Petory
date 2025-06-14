@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.study.petory.common.config.SecurityWhitelist;
 import com.study.petory.common.exception.CustomException;
 import com.study.petory.common.exception.enums.ErrorCode;
 
@@ -44,17 +45,8 @@ public class JwtFilter extends OncePerRequestFilter {
 		this.loginRefreshToken = loginRefreshToken;
 	}
 
-	// WHITELIST (인증이 필요 없는 경로 리스트)
-	private static final List<String> WHITELIST = List.of(
-		"/auth/reissue",
-		"/users/test-login",
-		"/login.html",
-		"/favicon.ico",
-		"/map.html",
-		"/trade-boards",
-		"/trade-boards/{tradeBoardId}",
-		"./questions/today "
-	);
+	// WHITELIST (인증이 필요 없는 경로 리스트 - SecurityWhitelist 와 통일)
+	private static final List<String> WHITELIST = SecurityWhitelist.URL_WHITELIST;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -89,7 +81,7 @@ public class JwtFilter extends OncePerRequestFilter {
 		}
 
 		// 정적 리소스 또는 화이트리스트 우회
-		if (url.matches(".*(\\.html|\\.css|\\.js|\\.png|\\.jpg|\\.ico)$") || WHITELIST.contains(url)) {
+		if (url.endsWith(".*(\\.html|\\.css|\\.js|\\.png|\\.jpg|\\.ico)$") || WHITELIST.contains(url)) {
 			debugLog("WHITELIST 경로입니다. 필터 우회: " + url);
 			filterChain.doFilter(request, response);
 			return;

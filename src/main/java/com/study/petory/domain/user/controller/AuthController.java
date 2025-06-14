@@ -72,7 +72,7 @@ public class AuthController {
 	 * @param role 부여할 권한
 	 * @return 부여 이후 해당 사용자의 전체 권한 목록
 	 */
-	@PostMapping("/role")
+	@PostMapping("/roles")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<CommonResponse<Object>> addUserRole(
 		@RequestParam("userId") Long targetUserId,
@@ -92,7 +92,7 @@ public class AuthController {
 	 * @param role 제거할 권한
 	 * @return 제거 이후 해당 사용자의 전체 권한 목록
 	 */
-	@DeleteMapping("/role/remove")
+	@DeleteMapping("/roles/remove")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<CommonResponse<Object>> removeUserRole(
 		@RequestParam("userId") Long targetUserId,

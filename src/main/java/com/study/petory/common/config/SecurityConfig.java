@@ -56,33 +56,17 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
-			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // CORS 설정 적용
+			// CORS 설정 적용
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 			.logout(AbstractHttpConfigurer::disable)
 			.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			// TODO - 배포 전 체크
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers(
-					"/auth/reissue",
-					"/users/test-login",
-					"/auth/logout",
-					"/login/**",
-					"/oauth2/**",       		      // 소셜 로그인 진입점 (예: /oauth2/authorization/google)
-					"/login/oauth2/**", 		      // 소셜 로그인 콜백 URI (예: /login/oauth2/code/google)
-					"/error",
-					"/login.html",                  // 프론트 로그인 진입점
-					"/login-success.html",          // 프론트 로그인 성공 시 진입점
-					"/css/**",
-					"/js/**",
-					"/images/**",
-					"/map.html",                    // 프론트 지도 진입점
-					"/trade-boards",
-					"/trade-boards/{tradeBoardId}",
-					"./questions/today "
-				).permitAll()
-				.requestMatchers(HttpMethod.GET, "/owner-boards/**").permitAll()  // /owner-boards 하위의 경로 중 GET 매핑만 모두 허용
-				.requestMatchers(HttpMethod.GET, "/places/**").permitAll()        // /places 하위의 경로 중 GET 매핑만 모두 허용
+				// Security 전용 WHITELIST
+				.requestMatchers(SecurityWhitelist.URL_WHITELIST.toArray(new String[0])).permitAll()
+				// GET 메서드의 특정 경로 한정 허용
+				.requestMatchers(HttpMethod.GET, SecurityWhitelist.PERMIT_GET_PREFIXES.toArray(new String[0])).permitAll()
 				.anyRequest().authenticated()
 			)
 
