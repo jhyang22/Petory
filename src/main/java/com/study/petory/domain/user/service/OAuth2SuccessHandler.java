@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-	private final AuthService authService;
+	private final AuthServiceImpl authServiceImpl;
 
 	@Override
 	public void onAuthenticationSuccess(
@@ -46,7 +46,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		// TODO - 배포 전 refreshToken → HttpOnly 헤더 또는 response body 로만 처리 필요
 		// 토큰 발급 및 저장 처리
-		TokenResponseDto tokens = authService.issueToken(user);
+		TokenResponseDto tokens = authServiceImpl.issueToken(user);
 
 		// RefreshToken 헤더에 담기 (인코딩 포함)
 		String encodedRefreshToken = URLEncoder.encode(tokens.getRefreshToken(), StandardCharsets.UTF_8);

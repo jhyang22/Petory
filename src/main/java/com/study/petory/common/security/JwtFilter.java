@@ -3,7 +3,6 @@ package com.study.petory.common.security;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -136,12 +135,12 @@ public class JwtFilter extends OncePerRequestFilter {
 				.map(SimpleGrantedAuthority::new)
 				.toList();
 
-
 			debugLog("JWT Claims 파싱 성공 - userId: " + userId);
 
 			CustomPrincipal principal = new CustomPrincipal(userId, email, nickname, authorities);
 
-			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal, null, authorities);
+			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal,
+				null, authorities);
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			debugLog("SecurityContext 등록 완료 - principal: " + principal.getEmail());
 
