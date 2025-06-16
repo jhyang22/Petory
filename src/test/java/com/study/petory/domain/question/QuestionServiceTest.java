@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.study.petory.domain.dailyQna.Repository.QuestionRepository;
 import com.study.petory.domain.dailyQna.dto.request.QuestionCreateRequestDto;
 import com.study.petory.domain.dailyQna.dto.request.QuestionUpdateRequestDto;
 import com.study.petory.domain.dailyQna.dto.response.QuestionGetAllResponseDto;
@@ -33,6 +32,7 @@ import com.study.petory.domain.dailyQna.dto.response.QuestionGetOneResponseDto;
 import com.study.petory.domain.dailyQna.dto.response.QuestionGetTodayResponseDto;
 import com.study.petory.domain.dailyQna.entity.Question;
 import com.study.petory.domain.dailyQna.entity.QuestionStatus;
+import com.study.petory.domain.dailyQna.repository.QuestionRepository;
 import com.study.petory.domain.dailyQna.service.QuestionServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -73,16 +73,12 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 질문을 저장한다.")
 	public void saveQuestion() {
 		// given
-		Long adminId = 1L;
-
 		QuestionCreateRequestDto request = new QuestionCreateRequestDto("질문입니다.", "01-01");
 
 		given(questionRepository.existsByDate("01-01")).willReturn(false);
 
-		// refactor: 유저 권한 검증 추가
-
 		// when
-		questionService.saveQuestion(adminId, request);
+		questionService.saveQuestion(request);
 
 		// then
 		verify(questionRepository, times(1)).save(any());
@@ -92,14 +88,12 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 전체 질문을 조회한다.")
 	public void findAllQuestion() {
 		// given
-		Long adminId = 1L;
-
 		Pageable pageable = PageRequest.of(7, 50, Sort.by("date").ascending());
 		given(questionRepository.findQuestionByPage(pageable)).willReturn(
 			setQuestion(366, QuestionStatus.ACTIVE, pageable));
 
 		// when
-		Page<QuestionGetAllResponseDto> responsePage = questionService.findAllQuestion(adminId, pageable);
+		Page<QuestionGetAllResponseDto> responsePage = questionService.findAllQuestion(pageable);
 
 		// then
 		assertThat(responsePage.getContent()).hasSize(16);
@@ -112,7 +106,6 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 단건 질문을 조회한다.")
 	public void findOneQuestion() {
 		// given
-		Long adminId = 1L;
 		Long questionId = 1L;
 
 		Question question = new Question("질문 1", "01-01", QuestionStatus.ACTIVE);
@@ -122,7 +115,7 @@ public class QuestionServiceTest {
 		given(questionRepository.findQuestionByActiveOrInactive(questionId)).willReturn(Optional.of(question));
 
 		// when
-		QuestionGetOneResponseDto response = questionService.findOneQuestion(adminId, questionId);
+		QuestionGetOneResponseDto response = questionService.findOneQuestion(questionId);
 
 		// then
 		assertThat(response.getQuestion()).isEqualTo("질문 1");
@@ -154,7 +147,6 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 질문을 수정한다.")
 	public void updateQuestion() {
 		// given
-		Long adminId = 1L;
 		Long questionId = 1L;
 
 		Question question = new Question("수정 전 질문", "01-01", QuestionStatus.ACTIVE);
@@ -165,7 +157,7 @@ public class QuestionServiceTest {
 		QuestionUpdateRequestDto request = new QuestionUpdateRequestDto("수정된 질문", "01-02");
 
 		// when
-		questionService.updateQuestion(adminId, questionId, request);
+		questionService.updateQuestion(questionId, request);
 
 		//then
 		Question updatedQuestion = questionService.findQuestionByQuestionId(questionId);
@@ -178,7 +170,6 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 질문을 비활성화 한다.")
 	public void InactiveQuestion() {
 		// given
-		Long adminId = 1L;
 		Long questionId = 1L;
 
 		Question question = new Question("비활성화 전 질문", "01-01", QuestionStatus.ACTIVE);
@@ -188,7 +179,7 @@ public class QuestionServiceTest {
 		given(questionRepository.findById(questionId)).willReturn(Optional.of(question));
 
 		// when
-		questionService.inactiveQuestion(adminId, questionId);
+		questionService.inactiveQuestion(questionId);
 
 		// then
 		Question inactiveQuestion = questionService.findQuestionByQuestionId(questionId);
@@ -200,15 +191,13 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 비활성화 된 질문을 조회한다.")
 	public void findInactiveQuestion() {
 		// given
-		Long adminId = 1L;
-
 		Pageable pageable = PageRequest.of(1, 50, Sort.by("updatedAt").ascending());
 
 		given(questionRepository.findQuestionByInactive(pageable)).willReturn(
 			setQuestion(60, QuestionStatus.INACTIVE, pageable));
 
 		// when
-		Page<QuestionGetInactiveResponseDto> responsePage = questionService.findInactiveQuestion(adminId, pageable);
+		Page<QuestionGetInactiveResponseDto> responsePage = questionService.findInactiveQuestion(pageable);
 
 		// then
 		assertThat(responsePage.getContent()).hasSize(10);
@@ -221,7 +210,6 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 비활성화 된 질문을 복구한다.")
 	public void updateQuestionStatusActive() {
 		// given
-		Long adminId = 1L;
 		Long questionId = 1L;
 
 		Question question = new Question("질문", "01-01", QuestionStatus.INACTIVE);
@@ -230,7 +218,7 @@ public class QuestionServiceTest {
 		given(questionRepository.findById(questionId)).willReturn(Optional.of(question));
 
 		// when
-		questionService.updateQuestionStatusActive(adminId, questionId);
+		questionService.updateQuestionStatusActive(questionId);
 
 		// then
 		Question updatedStatusQuestion = questionService.findQuestionByQuestionId(questionId);
@@ -242,7 +230,6 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 질문을 삭제한다.")
 	public void deactivateQuestion() {
 		// given
-		Long adminId = 1L;
 		Long questionId = 1L;
 
 		Question question = new Question("질문", "01-01", QuestionStatus.ACTIVE);
@@ -252,7 +239,7 @@ public class QuestionServiceTest {
 		given(questionRepository.findById(questionId)).willReturn(Optional.of(question));
 
 		// when
-		questionService.deactivateQuestion(adminId, questionId);
+		questionService.deactivateQuestion(questionId);
 
 		// then
 		Question deactivatedQuestion = questionService.findQuestionByQuestionId(questionId);
@@ -265,15 +252,13 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 삭제된 질문을 조회한다.")
 	public void findQuestionByDeleted() {
 		// given
-		Long adminId = 1L;
-
 		Pageable pageable = PageRequest.of(1, 50, Sort.by("deletedAt").ascending());
 
 		given(questionRepository.findQuestionByDeleted(pageable)).willReturn(
 			setQuestion(60, QuestionStatus.DELETED, pageable));
 
 		// when
-		Page<QuestionGetDeletedResponse> responsePage = questionService.findQuestionByDeleted(adminId, pageable);
+		Page<QuestionGetDeletedResponse> responsePage = questionService.findQuestionByDeleted(pageable);
 
 		// then
 		assertThat(responsePage.getContent()).hasSize(10);
@@ -286,7 +271,6 @@ public class QuestionServiceTest {
 	@DisplayName("관리자가 삭제된 질문을 복구한다.")
 	public void restoreQuestion() {
 		// given
-		Long adminId = 1L;
 		Long questionId = 1L;
 		LocalDateTime deletedTime = LocalDateTime.now();
 
@@ -297,7 +281,7 @@ public class QuestionServiceTest {
 		given(questionRepository.findById(questionId)).willReturn(Optional.of(question));
 
 		// when
-		questionService.restoreQuestion(adminId, questionId);
+		questionService.restoreQuestion(questionId);
 
 		// then
 		Question restoredQuestion = questionService.findQuestionByQuestionId(questionId);

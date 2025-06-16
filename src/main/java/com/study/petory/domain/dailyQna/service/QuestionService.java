@@ -24,25 +24,25 @@ public interface QuestionService {
 
 	void existsByDate(String date);
 
-	void saveQuestion(Long userId, QuestionCreateRequestDto request);
+	void saveQuestion(QuestionCreateRequestDto request);
 
-	Page<QuestionGetAllResponseDto> findAllQuestion(Long userId, Pageable pageable);
+	Page<QuestionGetAllResponseDto> findAllQuestion(Pageable pageable);
 
-	QuestionGetOneResponseDto findOneQuestion(Long userId, Long questionId);
+	QuestionGetOneResponseDto findOneQuestion(Long questionId);
 
 	QuestionGetTodayResponseDto findTodayQuestion();
 
-	void updateQuestion(Long userId, Long questionId, QuestionUpdateRequestDto request);
+	void updateQuestion(Long questionId, QuestionUpdateRequestDto request);
 
-	void inactiveQuestion(Long adminId, Long questionId);
+	void inactiveQuestion(Long questionId);
 
-	Page<QuestionGetInactiveResponseDto> findInactiveQuestion(Long adminId, Pageable pageable);
+	Page<QuestionGetInactiveResponseDto> findInactiveQuestion(Pageable pageable);
 
-	void updateQuestionStatusActive(Long adminId, Long questionId);
+	void updateQuestionStatusActive(Long questionId);
 
-	void deactivateQuestion(Long userId, Long questionId);
+	void deactivateQuestion(Long questionId);
 
-	Page<QuestionGetDeletedResponse> findQuestionByDeleted(Long adminId, Pageable pageable);
+	Page<QuestionGetDeletedResponse> findQuestionByDeleted(Pageable pageable);
 
-	void restoreQuestion(Long userId, Long questionId);
+	void restoreQuestion(Long questionId);
 }

@@ -32,9 +32,9 @@ public interface DailyQnaService {
 
 	void updateDailyQnaStatusActive(Long userId, Long dailyQnaId);
 
-	void deleteDailyQna(Long adminId, Long dailyQnaId);
+	void deleteDailyQna(Long dailyQnaId);
 
-	Page<DailyQnaGetDeletedResponse> findDeletedDailyQna(Long adminId, Long userId, Pageable pageable);
+	Page<DailyQnaGetDeletedResponse> findDeletedDailyQna(Long userId, Pageable pageable);
 
-	void restoreDailyQna(Long adminId, Long dailyQnaId);
+	void restoreDailyQna(Long dailyQnaId);
 }

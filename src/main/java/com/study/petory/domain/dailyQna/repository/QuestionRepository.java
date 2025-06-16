@@ -1,4 +1,4 @@
-package com.study.petory.domain.dailyQna.Repository;
+package com.study.petory.domain.dailyQna.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

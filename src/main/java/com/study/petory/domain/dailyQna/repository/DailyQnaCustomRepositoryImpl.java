@@ -1,4 +1,4 @@
-package com.study.petory.domain.dailyQna.Repository;
+package com.study.petory.domain.dailyQna.repository;
 
 import java.time.LocalDate;
 import java.util.List;

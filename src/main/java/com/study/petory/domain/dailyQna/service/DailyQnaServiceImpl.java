@@ -1,6 +1,5 @@
 package com.study.petory.domain.dailyQna.service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.study.petory.common.exception.CustomException;
 import com.study.petory.common.exception.enums.ErrorCode;
-import com.study.petory.domain.dailyQna.Repository.DailyQnaRepository;
 import com.study.petory.domain.dailyQna.dto.request.DailyQnaCreateRequestDto;
 import com.study.petory.domain.dailyQna.dto.request.DailyQnaUpdateRequestDto;
 import com.study.petory.domain.dailyQna.dto.response.DailyQnaGetDeletedResponse;
@@ -20,8 +18,8 @@ import com.study.petory.domain.dailyQna.dto.response.DailyQnaGetResponseDto;
 import com.study.petory.domain.dailyQna.entity.DailyQna;
 import com.study.petory.domain.dailyQna.entity.DailyQnaStatus;
 import com.study.petory.domain.dailyQna.entity.Question;
-import com.study.petory.domain.user.entity.User;
-import com.study.petory.domain.user.repository.UserRepository;
+import com.study.petory.domain.dailyQna.repository.DailyQnaRepository;
+import com.study.petory.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,9 +29,7 @@ public class DailyQnaServiceImpl implements DailyQnaService{
 
 	private final DailyQnaRepository dailyQnaRepository;
 	private final QuestionService questionService;
-
-	// 리펙토링 예정
-	private final UserRepository userRepository;
+	private final UserService userService;
 
 	// 단순 답변 조회
 	@Override
@@ -64,13 +60,10 @@ public class DailyQnaServiceImpl implements DailyQnaService{
 		if (dailyQnaRepository.isDailyQnaToday(userId, questionId)) {
 			throw new CustomException(ErrorCode.ALREADY_WRITTEN_TODAY);
 		}
-		// 리펙토링 예정
-		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Question todayQuestion = questionService.findQuestionByQuestionId(questionId);
 		dailyQnaRepository.save(DailyQna.builder()
-			.user(user)
+			.user(userService.getUserById(userId))
 			.question(todayQuestion)
 			.answer(requestDto.getAnswer())
 			.dailyQnaStatus(DailyQnaStatus.ACTIVE)
@@ -127,11 +120,7 @@ public class DailyQnaServiceImpl implements DailyQnaService{
 	// 답변을 관리자가 삭제
 	@Override
 	@Transactional
-	public void deleteDailyQna(Long adminId, Long dailyQnaId) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public void deleteDailyQna(Long dailyQnaId) {
 		DailyQna dailyQna = findDailyQnaByActive(dailyQnaId);
 		dailyQna.deactivateEntity();
 		dailyQna.updateStatusDelete();
@@ -139,11 +128,7 @@ public class DailyQnaServiceImpl implements DailyQnaService{
 
 	// 관리자가 삭제된 답변 조회
 	@Override
-	public Page<DailyQnaGetDeletedResponse> findDeletedDailyQna(Long adminId, Long userId, Pageable pageable) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public Page<DailyQnaGetDeletedResponse> findDeletedDailyQna(Long userId, Pageable pageable) {
 		Page<DailyQna> dailyQnaList = dailyQnaRepository.findDailyQnaByDeleted(userId, pageable);
 
 		return dailyQnaList
@@ -153,11 +138,7 @@ public class DailyQnaServiceImpl implements DailyQnaService{
 	// 관리자가 삭제된 답변 복구
 	@Override
 	@Transactional
-	public void restoreDailyQna(Long adminId, Long dailyQnaId) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public void restoreDailyQna(Long dailyQnaId) {
 		DailyQna dailyQna = findDailyQnaByDailyQnaId(dailyQnaId);
 		dailyQna.updateStatusActive();
 		dailyQna.restoreEntity();

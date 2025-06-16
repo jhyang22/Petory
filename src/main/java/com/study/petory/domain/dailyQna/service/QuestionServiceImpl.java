@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.study.petory.common.exception.CustomException;
 import com.study.petory.common.exception.enums.ErrorCode;
 import com.study.petory.common.util.DateUtil;
-import com.study.petory.domain.dailyQna.Repository.QuestionRepository;
 import com.study.petory.domain.dailyQna.dto.request.QuestionCreateRequestDto;
 import com.study.petory.domain.dailyQna.dto.request.QuestionUpdateRequestDto;
 import com.study.petory.domain.dailyQna.dto.response.QuestionGetAllResponseDto;
@@ -23,6 +22,7 @@ import com.study.petory.domain.dailyQna.dto.response.QuestionGetOneResponseDto;
 import com.study.petory.domain.dailyQna.dto.response.QuestionGetTodayResponseDto;
 import com.study.petory.domain.dailyQna.entity.Question;
 import com.study.petory.domain.dailyQna.entity.QuestionStatus;
+import com.study.petory.domain.dailyQna.repository.QuestionRepository;
 import com.study.petory.domain.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -85,12 +85,9 @@ public class QuestionServiceImpl implements QuestionService {
 	// 질문을 저장 admin
 	@Override
 	@Transactional
-	public void saveQuestion(Long adminId, QuestionCreateRequestDto request) {
+	public void saveQuestion(QuestionCreateRequestDto request) {
 		existsByDate(request.getDate());
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+
 		questionRepository.save(Question.builder()
 			.question(request.getQuestion())
 			.date(request.getDate())
@@ -101,22 +98,14 @@ public class QuestionServiceImpl implements QuestionService {
 
 	// 질문 전체 조회 admin
 	@Override
-	public Page<QuestionGetAllResponseDto> findAllQuestion(Long adminId, Pageable pageable) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public Page<QuestionGetAllResponseDto> findAllQuestion(Pageable pageable) {
 		Page<Question> questionPage = questionRepository.findQuestionByPage(pageable);
 		return questionPage.map(QuestionGetAllResponseDto::from);
 	}
 
 	// 질문 단건 조회 admin
 	@Override
-	public QuestionGetOneResponseDto findOneQuestion(Long adminId, Long questionId) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public QuestionGetOneResponseDto findOneQuestion(Long questionId) {
 		return QuestionGetOneResponseDto.from(findQuestionByActiveOrInactive(questionId));
 	}
 
@@ -134,11 +123,7 @@ public class QuestionServiceImpl implements QuestionService {
 	@Override
 	@Transactional
 	@CacheEvict(value = "todayQuestion", allEntries = true)
-	public void updateQuestion(Long adminId, Long questionId, QuestionUpdateRequestDto request) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public void updateQuestion(Long questionId, QuestionUpdateRequestDto request) {
 		Question question = findQuestionByQuestionId(questionId);
 		question.update(request.getQuestion(), request.getDate());
 	}
@@ -147,22 +132,14 @@ public class QuestionServiceImpl implements QuestionService {
 	@Override
 	@Transactional
 	@CacheEvict(value = "todayQuestion", allEntries = true)
-	public void inactiveQuestion(Long adminId, Long questionId) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public void inactiveQuestion(Long questionId) {
 		Question question = findQuestionByActive(questionId);
 		question.updateStatusInactive();
 	}
 
 	// 비활성화 된 질문 조회 admin
 	@Override
-	public Page<QuestionGetInactiveResponseDto> findInactiveQuestion(Long adminId, Pageable pageable) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public Page<QuestionGetInactiveResponseDto> findInactiveQuestion(Pageable pageable) {
 		Page<Question> questionPage = questionRepository.findQuestionByInactive(pageable);
 		return questionPage
 			.map(QuestionGetInactiveResponseDto::from);
@@ -171,11 +148,7 @@ public class QuestionServiceImpl implements QuestionService {
 	// 비활성화 된 질문 복구 admin
 	@Override
 	@Transactional
-	public void updateQuestionStatusActive(Long adminId, Long questionId) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public void updateQuestionStatusActive(Long questionId) {
 		Question question = findQuestionByQuestionId(questionId);
 		question.updateStatusActive();
 	}
@@ -183,11 +156,7 @@ public class QuestionServiceImpl implements QuestionService {
 	// 질문 삭제 admin
 	@Override
 	@Transactional
-	public void deactivateQuestion(Long adminId, Long questionId) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public void deactivateQuestion(Long questionId) {
 		Question question = findQuestionByQuestionId(questionId);
 		if (question.isDeleted()) {
 			throw new CustomException(ErrorCode.QUESTION_IS_DEACTIVATED);
@@ -199,11 +168,7 @@ public class QuestionServiceImpl implements QuestionService {
 	// 삭제된 질문 복구 admin
 	@Override
 	@Transactional
-	public void restoreQuestion(Long adminId, Long questionId) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public void restoreQuestion(Long questionId) {
 		Question question = findQuestionByQuestionId(questionId);
 		if (!question.isDeleted()) {
 			throw new CustomException(ErrorCode.QUESTION_IS_NOT_DEACTIVATED);
@@ -214,11 +179,7 @@ public class QuestionServiceImpl implements QuestionService {
 
 	// 관리자가 삭제된 질문 조회 admin
 	@Override
-	public Page<QuestionGetDeletedResponse> findQuestionByDeleted(Long adminId, Pageable pageable) {
-		// 수정 예정
-		// if (!userService.권한검증메서드(adminId)) {
-		// 	throw new CustomException(ErrorCode.FORBIDDEN);
-		// }
+	public Page<QuestionGetDeletedResponse> findQuestionByDeleted(Pageable pageable) {
 		Page<Question> questionList = questionRepository.findQuestionByDeleted(pageable);
 
 		return questionList
