@@ -40,7 +40,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		String uri = httpServletRequest.getRequestURI();
 
 		// \\d+ 는 숫자 1개 이상으로 이루어진 문자열을 의미
-		if (!uri.matches("/places/\\d+/reports")) {
+		String keyPrefix;
+		if (uri.matches("/places/\\d+/reviews")) {
+			keyPrefix = "rate-limit:review:";
+		} else if (uri.matches("/places/\\d+/reports")) {
+			keyPrefix = "rate-limit:report:";
+		} else {
 			filterChain.doFilter(httpServletRequest, httpServletResponse);
 			return;
 		}
@@ -54,7 +59,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 		}
 
 		// user 마다 고유 키를 설정
-		String key = "rate-limit:report:" + userId;
+		String key = keyPrefix + userId;
 
 		// 버킷 생성
 		Bucket bucket = proxyManager.builder().build(key, bucketConfigurationSupplier);
@@ -67,7 +72,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 			httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			httpServletResponse.setCharacterEncoding("UTF-8"); // 한글 깨짐 방지
 			httpServletResponse.setContentType("text/plain; charset=UTF-8");
-			httpServletResponse.getWriter().write("신고는 1시간에 최대 10회까지 가능합니다.");
+			httpServletResponse.getWriter().write("같은 요청은 1시간에 최대 10회까지 가능합니다.");
 		}
 	}
 
